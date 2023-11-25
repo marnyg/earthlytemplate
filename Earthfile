@@ -40,7 +40,7 @@ generate-git-hooks:
 
 lintCommit:
     FROM registry.hub.docker.com/commitlint/commitlint:latest
-    COPY . .
+    COPY .git .git
     RUN echo "module.exports = {extends: ['@commitlint/config-conventional']}" > commitlint.config.js
     RUN commitlint --edit ${1}
 
