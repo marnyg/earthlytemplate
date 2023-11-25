@@ -4,6 +4,7 @@ generate-git-hooks:
     FROM alpine:3.14
 
     # Create the pre-commit hook linux
+    RUN mkdir hooks
     RUN echo "#! /bin/sh" > hooks/pre-commit
     RUN echo "earthly +lint" >> hooks/pre-commit
     RUN chmod +x hooks/pre-commit
