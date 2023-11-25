@@ -49,6 +49,7 @@ test:
     DO +TEST
 
 LINT_COMMIT:
+    COMMAND
     FROM registry.hub.docker.com/commitlint/commitlint:latest
     COPY .git/ .git/
     RUN echo "module.exports = {extends: ['@commitlint/config-conventional']}" > commitlint.config.js
@@ -56,6 +57,7 @@ LINT_COMMIT:
     RUN commitlint --edit ${1}
 
 LINT: 
+    COMMAND
     FROM mcr.microsoft.com/dotnet/sdk:7.0
     COPY . .
     IF [ -f *.csproj ] -a [ -f *.fsproj ] -a [ -f *.vbproj ]
@@ -65,6 +67,7 @@ LINT:
     END
 
 TEST: 
+    COMMAND
     FROM mcr.microsoft.com/dotnet/sdk:7.0
     COPY . .
     IF [ -f *.csproj ] -a [ -f *.fsproj ] -a [ -f *.vbproj ]
