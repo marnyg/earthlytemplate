@@ -7,28 +7,28 @@ generate-git-hooks:
 
     # check message hook linux
     RUN echo "#! /bin/sh" > hooks/commit-msg
-    RUN echo "earthly +lintCommit" >> hooks/commit-msg
+    RUN echo "earthly github.com/marnyg/earthlytemplate+lintCommit" >> hooks/commit-msg
     RUN chmod +x hooks/commit-msg
     # check message hook windows 
-    RUN echo "earthly +lintCommit" > hooks/commit-msg.bat
+    RUN echo "earthly github.com/marnyg/earthlytemplate+lintCommit" > hooks/commit-msg.bat
 
 
     # Create the pre-commit hook linux
     RUN echo "#! /bin/sh" > hooks/pre-commit
-    RUN echo "earthly +lint" >> hooks/pre-commit
+    RUN echo "earthly github.com/marnyg/earthlytemplate+lint" >> hooks/pre-commit
     RUN chmod +x hooks/pre-commit
 
     # Create the pre-commit hook windows
-    RUN echo "earthly +lint" > hooks/pre-commit.bat
+    RUN echo "earthly github.com/marnyg/earthlytemplate+lint" > hooks/pre-commit.bat
 
 
     # Create the pre-push hook linux
     RUN echo "#! /bin/sh" > hooks/pre-push
-    RUN echo "earthly +test" > hooks/pre-push
+    RUN echo "earthly github.com/marnyg/earthlytemplate+test" > hooks/pre-push
     RUN chmod +x hooks/pre-push
 
     # Create the pre-push hook windows
-    RUN echo "earthly +test" > hooks/pre-push.bat
+    RUN echo "earthly github.com/marnyg/earthlytemplate+test" > hooks/pre-push.bat
 
     # Save the hooks as build artifacts
     SAVE ARTIFACT --keep-own hooks/commit-msg AS LOCAL ./.git/hooks/commit-msg
