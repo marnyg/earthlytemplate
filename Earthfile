@@ -7,28 +7,28 @@ generate-git-hooks:
 
     # check message hook linux
     RUN echo "#! /bin/sh" > hooks/commit-msg
-    RUN echo "earthly github.com/marnyg/earthlytemplate+lintCommit" >> hooks/commit-msg
+    RUN echo "earthly github.com/marnyg/earthlytemplate+LINT_COMMIT" >> hooks/commit-msg
     RUN chmod +x hooks/commit-msg
     # check message hook windows 
-    RUN echo "earthly github.com/marnyg/earthlytemplate+lintCommit" > hooks/commit-msg.bat
+    RUN echo "earthly github.com/marnyg/earthlytemplate+LINT_COMMIT" > hooks/commit-msg.bat
 
 
     # Create the pre-commit hook linux
     RUN echo "#! /bin/sh" > hooks/pre-commit
-    RUN echo "earthly github.com/marnyg/earthlytemplate+lint" >> hooks/pre-commit
+    RUN echo "earthly github.com/marnyg/earthlytemplate+LINT" >> hooks/pre-commit
     RUN chmod +x hooks/pre-commit
 
     # Create the pre-commit hook windows
-    RUN echo "earthly github.com/marnyg/earthlytemplate+lint" > hooks/pre-commit.bat
+    RUN echo "earthly github.com/marnyg/earthlytemplate+LINT" > hooks/pre-commit.bat
 
 
     # Create the pre-push hook linux
     RUN echo "#! /bin/sh" > hooks/pre-push
-    RUN echo "earthly github.com/marnyg/earthlytemplate+test" > hooks/pre-push
+    RUN echo "earthly github.com/marnyg/earthlytemplate+TEST" > hooks/pre-push
     RUN chmod +x hooks/pre-push
 
     # Create the pre-push hook windows
-    RUN echo "earthly github.com/marnyg/earthlytemplate+test" > hooks/pre-push.bat
+    RUN echo "earthly github.com/marnyg/earthlytemplate+TEST" > hooks/pre-push.bat
 
     # Save the hooks as build artifacts
     SAVE ARTIFACT --keep-own hooks/commit-msg AS LOCAL ./.git/hooks/commit-msg
@@ -38,13 +38,17 @@ generate-git-hooks:
     SAVE ARTIFACT --keep-own hooks/pre-push AS LOCAL ./.git/hooks/pre-push
     SAVE ARTIFACT --keep-own hooks/pre-push.bat AS LOCAL ./.git/hooks/pre-push.bat
 
-lintCommit:
+sync:  
+    BUILD +generate-git-hooks
+
+LINT_COMMIT:
     FROM registry.hub.docker.com/commitlint/commitlint:latest
-    COPY .git .git
+    COPY .git/ .git/
     RUN echo "module.exports = {extends: ['@commitlint/config-conventional']}" > commitlint.config.js
+    RUN cat .git/COMMIT_EDITMSG
     RUN commitlint --edit ${1}
 
-lint: 
+LINT: 
     FROM mcr.microsoft.com/dotnet/sdk:7.0
     COPY . .
     IF [ -f *.csproj ] -a [ -f *.fsproj ] -a [ -f *.vbproj ]
@@ -53,7 +57,7 @@ lint:
       RUN echo "No .NET project found, skipping format" 
     END
 
-test: 
+TEST: 
     FROM mcr.microsoft.com/dotnet/sdk:7.0
     COPY . .
     IF [ -f *.csproj ] -a [ -f *.fsproj ] -a [ -f *.vbproj ]
@@ -86,10 +90,12 @@ gitversion:
     SAVE ARTIFACT gitversion.json AS LOCAL gitversion.json
 
 docker-build:
+    #EXAMPLE https://docs.earthly.dev/basics/part-4-args#passing-args-in-from-build-and-copy 
     FROM mcr.microsoft.com/dotnet/runtime:7.0
     COPY +build/publish .
     COPY +gitversion/gitversion.json .
     ##ENTRYPOINT ["dotnet", ".dll"]
+    #TODO: look into the docker HEALTHCHECK command: https://scoutapm.com/blog/how-to-use-docker-healthcheck
     ENTRYPOINT ["ls"]
     SAVE IMAGE  earthly/examples:dotnet
 
