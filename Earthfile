@@ -59,10 +59,11 @@ LINT_COMMIT:
 LINT: 
     COMMAND
     FROM mcr.microsoft.com/dotnet/sdk:7.0
+    ARG csproj_root=./src
+    COPY --if-exists $csproj_root ./src
 
-    COPY $csproj_root ./src
-    IF [ -f "$csproj_root/*.csproj" ] -a [ -f "$csproj_root/*.fsproj" ] -a [ -f "$csproj_root/*.vbproj" ]
-      RUN dotnet format ./src
+    IF find ./src -maxdepth 1 \( -name "*.csproj" -o -name "*.fsproj" -o -name "*.vbproj" \)
+      RUN dotnet format --no-restore --verify-no-changes ./src
     ELSE 
       RUN echo "No .NET project found, skipping format" 
     END
@@ -70,10 +71,10 @@ LINT:
 TEST: 
     COMMAND
     FROM mcr.microsoft.com/dotnet/sdk:7.0
-    ARG csproj_root
+    ARG csproj_root=./src
+    COPY --if-exists $csproj_root ./src
 
-    COPY $csproj_root ./src
-    IF [ -f "$csproj_root/*.csproj" ] -a [ -f "$csproj_root/*.fsproj" ] -a [ -f "$csproj_root/*.vbproj" ]
+    IF find ./src -maxdepth 1 \( -name "*.csproj" -o -name "*.fsproj" -o -name "*.vbproj" \)
       DO +RESTOR_DOTNET --csproj_file="$csproj_root/*.csproj"
       RUN dotnet test --no-restore ./src
     ELSE 
@@ -138,7 +139,7 @@ SAVE_IMAGS_WITH_GITVERSION_TAGS:
 
 BUILD_DOCKER_IMAGE:
     COMMAND
-    DO template+GITVERSION --git_root=.
+    DO +GITVERSION --git_root=.
 
     FROM mcr.microsoft.com/dotnet/runtime:7.0
     ARG executable 
