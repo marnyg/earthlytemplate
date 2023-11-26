@@ -102,21 +102,21 @@ BUILD_DOTNET:
 
 GITVERSION:
     COMMAND
-    FROM gittools/gitversion
+    FROM gittools/gitversion 
     RUN apt update && apt install jq -y
     ARG git_root
+
     COPY "$git_root/.git" /repo/.git
     ENTRYPOINT ["/tools/dotnet-gitversion"]
     RUN /tools/dotnet-gitversion /repo # print output to stdout
-    #RUN /tools/dotnet-gitversion /repo /output file /outputfile gitversion.json
     RUN /tools/dotnet-gitversion /repo | jq -r "[.Major, .Minor, .Patch, .PreReleaseLabel | tostring ] | join(\" \")" > gitversion.json
     SAVE ARTIFACT gitversion.json 
     SAVE ARTIFACT gitversion.json AS LOCAL publish/gitversion.json
 
 SAVE_IMAGS_WITH_GITVERSION_TAGS:
     COMMAND
-    COPY publish/gitversion.json gitversion.json
     ARG CI_REGISTRY_IMAGE
+    
 
     # Set ARG variables using RUN
     RUN read MAJOR MINOR PATCH PRE_RELEASE < gitversion.json && \
@@ -139,12 +139,8 @@ SAVE_IMAGS_WITH_GITVERSION_TAGS:
 
 BUILD_DOCKER_IMAGE:
     COMMAND
-    DO +GITVERSION --git_root=.
-
-    #FROM mcr.microsoft.com/dotnet/runtime:7.0
     ARG executable 
     ENTRYPOINT ./$executable  
-
     DO +SAVE_IMAGS_WITH_GITVERSION_TAGS --CI_REGISTRY_IMAGE="gitlab/example/registry"
 
 
