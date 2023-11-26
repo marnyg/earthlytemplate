@@ -143,6 +143,7 @@ BUILD_DOCKER_IMAGE:
 
     FROM mcr.microsoft.com/dotnet/runtime:7.0
     ARG executable 
+    BUILD +build
     COPY +build/publish .
     ENTRYPOINT ./$executable  
 
