@@ -145,6 +145,6 @@ BUILD_DOCKER_IMAGE:
     ARG executable 
     ENTRYPOINT ./$executable  
 
-    DO template+SAVE_IMAGS_WITH_GITVERSION_TAGS --CI_REGISTRY_IMAGE="gitlab/example/registry"
+    DO +SAVE_IMAGS_WITH_GITVERSION_TAGS --CI_REGISTRY_IMAGE="gitlab/example/registry"
 
 
