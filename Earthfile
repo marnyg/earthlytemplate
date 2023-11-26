@@ -141,10 +141,8 @@ BUILD_DOCKER_IMAGE:
     COMMAND
     DO +GITVERSION --git_root=.
 
-    FROM mcr.microsoft.com/dotnet/runtime:7.0
+    #FROM mcr.microsoft.com/dotnet/runtime:7.0
     ARG executable 
-    BUILD +build
-    COPY +build/publish .
     ENTRYPOINT ./$executable  
 
     DO template+SAVE_IMAGS_WITH_GITVERSION_TAGS --CI_REGISTRY_IMAGE="gitlab/example/registry"
