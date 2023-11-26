@@ -76,36 +76,59 @@ TEST:
       RUN echo "No .NET project found, skipping test" 
     END
 
-deps:
-    COPY src/sendra-release-tools.csproj src/
+
+RESTOR_DOTNET:
+    COMMAND
+    ARG csproj_file
+    COPY $csproj_file src/
     RUN dotnet restore src/
 
-build:
-    FROM +deps
-    COPY src src
+BUILD_DOTNET:
+    COMMAND
+    ARG csproj_root
+    DO +RESTOR_DOTNET --csproj_file="$csproj_root/*.csproj"
+    COPY $csproj_root src
 
     RUN dotnet restore src/
     # make sure you have /bin and /obj in .earthlyignore, as their content from context might cause problems
     RUN dotnet publish --no-restore src/ -o publish
-
     SAVE ARTIFACT publish AS LOCAL publish
 
-gitversion:
-    FROM gittools/gitversion
-    COPY . /repo
-    ENTRYPOINT ["/tools/dotnet-gitversion"]
-    RUN /tools/dotnet-gitversion /repo 
-    RUN /tools/dotnet-gitversion /repo /output file /outputfile gitversion.json
-    SAVE ARTIFACT gitversion.json 
-    SAVE ARTIFACT gitversion.json AS LOCAL gitversion.json
 
-docker-build:
-    #EXAMPLE https://docs.earthly.dev/basics/part-4-args#passing-args-in-from-build-and-copy 
-    FROM mcr.microsoft.com/dotnet/runtime:7.0
-    COPY +build/publish .
-    COPY +gitversion/gitversion.json .
-    ##ENTRYPOINT ["dotnet", ".dll"]
-    #TODO: look into the docker HEALTHCHECK command: https://scoutapm.com/blog/how-to-use-docker-healthcheck
-    ENTRYPOINT ["ls"]
-    SAVE IMAGE  earthly/examples:dotnet
+GITVERSION:
+    COMMAND
+    FROM gittools/gitversion
+    RUN apt update && apt install jq -y
+    ARG git_root
+    COPY "$git_root/.git" /repo/.git
+    ENTRYPOINT ["/tools/dotnet-gitversion"]
+    RUN /tools/dotnet-gitversion /repo # print output to stdout
+    #RUN /tools/dotnet-gitversion /repo /output file /outputfile gitversion.json
+    RUN /tools/dotnet-gitversion /repo | jq -r "[.Major, .Minor, .Patch, .PreReleaseLabel | tostring ] | join(\" \")" > gitversion.json
+    SAVE ARTIFACT gitversion.json 
+    SAVE ARTIFACT gitversion.json AS LOCAL publish/gitversion.json
+
+SAVE_IMAGS_WITH_GITVERSION_TAGS:
+    COMMAND
+    COPY publish/gitversion.json gitversion.json
+    ARG CI_REGISTRY_IMAGE
+
+    # Set ARG variables using RUN
+    RUN read MAJOR MINOR PATCH PRE_RELEASE < gitversion.json && \
+        IMAGE=${IMAGE_NAME:+/$IMAGE_NAME} && \
+        APPEND_RELEASE=${PRE_RELEASE:+-$PRE_RELEASE} && \
+        TAG_LATEST="${CI_REGISTRY_IMAGE}${IMAGE}:${PRE_RELEASE:-latest}" && \
+        TAG_MAJOR="${CI_REGISTRY_IMAGE}${IMAGE}:${MAJOR}${APPEND_RELEASE}" && \
+        TAG_MINOR="${CI_REGISTRY_IMAGE}${IMAGE}:${MAJOR}.${MINOR}${APPEND_RELEASE}" && \
+        TAG_PATCH="${CI_REGISTRY_IMAGE}${IMAGE}:${MAJOR}.${MINOR}.${PATCH}${APPEND_RELEASE}" && \
+        echo "$TAG_LATEST" > /tmp/tags && \
+        echo "$TAG_MAJOR" >> /tmp/tags && \
+        echo "$TAG_MINOR" >> /tmp/tags && \
+        echo "$TAG_PATCH" >> /tmp/tags
+
+    # Save image with different tags
+    FOR tag IN $(cat /tmp/tags)
+        SAVE IMAGE $tag
+    END
+
 
