@@ -69,9 +69,12 @@ LINT:
 TEST: 
     COMMAND
     FROM mcr.microsoft.com/dotnet/sdk:7.0
-    COPY . .
+    ARG csproj_root
+    DO +RESTOR_DOTNET --csproj_file="$csproj_root/*.csproj"
+    COPY $csproj_root ./src
+
     IF [ -f *.csproj ] -a [ -f *.fsproj ] -a [ -f *.vbproj ]
-      RUN dotnet test
+      RUN dotnet test --no-restore ./src
     ELSE 
       RUN echo "No .NET project found, skipping test" 
     END
@@ -130,5 +133,17 @@ SAVE_IMAGS_WITH_GITVERSION_TAGS:
     FOR tag IN $(cat /tmp/tags)
         SAVE IMAGE $tag
     END
+     
+
+BUILD_DOCKER_IMAGE:
+    COMMAND
+    DO template+GITVERSION --git_root=.
+
+    FROM mcr.microsoft.com/dotnet/runtime:7.0
+    ARG executable
+    COPY +build/publish .
+    ENTRYPOINT ./$executable
+
+    DO template+SAVE_IMAGS_WITH_GITVERSION_TAGS --CI_REGISTRY_IMAGE="gitlab/example/registry"
 
 
