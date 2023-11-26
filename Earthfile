@@ -59,9 +59,10 @@ LINT_COMMIT:
 LINT: 
     COMMAND
     FROM mcr.microsoft.com/dotnet/sdk:7.0
-    COPY . .
-    IF [ -f *.csproj ] -a [ -f *.fsproj ] -a [ -f *.vbproj ]
-      RUN dotnet format
+
+    COPY $csproj_root ./src
+    IF [ -f "$csproj_root/*.csproj" ] -a [ -f "$csproj_root/*.fsproj" ] -a [ -f "$csproj_root/*.vbproj" ]
+      RUN dotnet format ./src
     ELSE 
       RUN echo "No .NET project found, skipping format" 
     END
@@ -71,9 +72,9 @@ TEST:
     FROM mcr.microsoft.com/dotnet/sdk:7.0
     ARG csproj_root
 
+    COPY $csproj_root ./src
     IF [ -f "$csproj_root/*.csproj" ] -a [ -f "$csproj_root/*.fsproj" ] -a [ -f "$csproj_root/*.vbproj" ]
       DO +RESTOR_DOTNET --csproj_file="$csproj_root/*.csproj"
-      COPY $csproj_root ./src
       RUN dotnet test --no-restore ./src
     ELSE 
       RUN echo "No .NET project found, skipping test" 
