@@ -25,12 +25,12 @@ generate-git-hooks:
     # Create the pre-push hook linux
     RUN echo "#! /bin/sh" > hooks/pre-push
     RUN echo "earthly +test" > hooks/pre-push
-    RUN echo "earthly +init-repo" > hooks/pre-push
+    RUN echo "earthly +init-repo" >> hooks/pre-push
     RUN chmod +x hooks/pre-push
 
     # Create the pre-push hook windows
     RUN echo "earthly +test" > hooks/pre-push.bat
-    RUN echo "earthly +init-repo" > hooks/pre-push.bat
+    RUN echo "earthly +init-repo" >> hooks/pre-push.bat
 
     # Save the hooks as build artifacts
     SAVE ARTIFACT --keep-own hooks/commit-msg AS LOCAL ./.git/hooks/commit-msg
