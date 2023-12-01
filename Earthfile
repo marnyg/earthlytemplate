@@ -102,14 +102,43 @@ BUILD_DOTNET:
     SAVE ARTIFACT publish AS LOCAL publish
 
 
+CREACT_GITVERSION_CONF:
+    COMMAND
+    RUN echo "
+mode: Mainline
+branches: {
+  main: {
+    regex: '^master$$|^main$$',
+    tag: useBranchName
+  },
+  develop: {
+    increment: Patch,
+    tag: useBranchName,
+    is-mainline: true
+  },
+  feature: {
+    regex: '^SCCC?[/-]',
+    increment: Patch,
+    tag: useBranchName,
+    is-mainline: true
+  }
+}
+ignore:
+  sha: []
+merge-message-formats: {}
+    " > GitVersion.yml
+
 GITVERSION:
     COMMAND
     FROM gittools/gitversion 
     RUN apt update && apt install jq -y
     ARG git_root
 
+    DO +CREACT_GITVERSION_CONF
+    RUN exit 2
     COPY "$git_root/.git" /repo/.git
     ENTRYPOINT ["/tools/dotnet-gitversion"]
+
     RUN /tools/dotnet-gitversion /repo # print output to stdout
     RUN /tools/dotnet-gitversion /repo | jq -r "[.Major, .Minor, .Patch, .PreReleaseLabel | tostring ] | join(\" \")" > gitversion.json
     SAVE ARTIFACT gitversion.json 
