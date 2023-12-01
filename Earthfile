@@ -135,7 +135,6 @@ GITVERSION:
     ARG git_root
 
     DO +CREACT_GITVERSION_CONF
-    RUN exit 2
     COPY "$git_root/.git" /repo/.git
     ENTRYPOINT ["/tools/dotnet-gitversion"]
 
