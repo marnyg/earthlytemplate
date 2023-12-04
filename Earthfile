@@ -164,7 +164,7 @@ SAVE_IMAGS_WITH_GITVERSION_TAGS:
 
     # Save image with different tags
     FOR tag IN $(cat /tmp/tags)
-        SAVE IMAGE $tag
+        SAVE IMAGE --push $tag
     END
      
 
