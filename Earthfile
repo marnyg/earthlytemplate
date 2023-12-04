@@ -113,11 +113,9 @@ branches: {
     tag: useBranchName
   },
   develop: {
-    regex: '^(origin/)?develop$',
     increment: Patch,
     tag: useBranchName,
-    is-mainline: true,
-    source-branches: ['develop']
+    is-mainline: true
   },
   feature: {
     regex: '^SCCC?[/-]',
