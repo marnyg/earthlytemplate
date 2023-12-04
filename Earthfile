@@ -143,6 +143,7 @@ GITVERSION:
     RUN tree /repo
 
     RUN tree /repo/.git
+    RUN cd /repo && git reflog && git branch -a
 
     RUN /tools/dotnet-gitversion /repo # print output to stdout
     RUN /tools/dotnet-gitversion /repo | jq -r "[.Major, .Minor, .Patch, .PreReleaseLabel | tostring ] | join(\" \")" > gitversion.json
