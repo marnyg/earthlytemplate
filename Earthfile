@@ -104,6 +104,7 @@ BUILD_DOTNET:
 
 CREACT_GITVERSION_CONF:
     COMMAND
+    RUN mkdir /repo
     RUN echo "
 mode: Mainline
 branches: {
@@ -126,7 +127,7 @@ branches: {
 ignore:
   sha: []
 merge-message-formats: {}
-    " > GitVersion.yml
+    " > /repo/GitVersion.yml
 
 GITVERSION:
     COMMAND
