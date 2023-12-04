@@ -109,7 +109,7 @@ CREACT_GITVERSION_CONF:
 mode: Mainline
 branches: {
   main: {
-    regex: '^master$$|^main$$',
+    regex: '^master$|^main$',
     tag: useBranchName
   },
   develop: {
