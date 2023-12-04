@@ -113,7 +113,7 @@ branches: {
     tag: useBranchName
   },
   develop: {
-    regex: '^(origin/)?develop$' # Adjusted regex to match both 'develop' and 'origin/develop'
+    regex: '^(origin/)?develop$' 
     increment: Patch,
     tag: useBranchName,
     is-mainline: true
