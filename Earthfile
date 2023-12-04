@@ -132,16 +132,12 @@ merge-message-formats: {}
 GITVERSION:
     COMMAND
     FROM gittools/gitversion 
-    RUN apt update && apt install jq tree -y
+    RUN apt update && apt install jq  -y
     ARG git_root
 
     DO +CREACT_GITVERSION_CONF
     COPY "$git_root/.git" /repo/.git
     ENTRYPOINT ["/tools/dotnet-gitversion"]
-    RUN tree /repo
-
-    RUN tree /repo/.git
-    RUN cd /repo && git reflog && git branch -a
 
     RUN /tools/dotnet-gitversion /repo # print output to stdout
     RUN /tools/dotnet-gitversion /repo | jq -r "[.Major, .Minor, .Patch, .PreReleaseLabel | tostring ] | join(\" \")" > gitversion.json
